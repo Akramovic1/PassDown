@@ -18,9 +18,9 @@ export default function CreateWill() {
   const [formData, setFormData] = useState({
     chain: '',
     distributionMethod: 'equal',
-    beneficiaries: [{ 
-      address: '', 
-      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({...acc, [token]: 100 / AVAILABLE_TOKENS.length}), {}),
+    beneficiaries: [{
+      address: '',
+      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: 100 / AVAILABLE_TOKENS.length }), {}),
       percentage: 100
     }],
     verificationMethod: 'inactivity',
@@ -37,10 +37,10 @@ export default function CreateWill() {
     const equalPercentage = 100 / formData.beneficiaries.length
     const newBeneficiaries = formData.beneficiaries.map(b => ({
       ...b,
-      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({...acc, [token]: equalPercentage}), {}),
+      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: equalPercentage }), {}),
       percentage: equalPercentage
     }))
-    
+
     setFormData(prev => ({
       ...prev,
       beneficiaries: newBeneficiaries,
@@ -75,8 +75,8 @@ export default function CreateWill() {
   }
 
   const handleSliderChange = (value: number[], beneficiaryIndex: number, token?: string) => {
-    const newBeneficiaries = [...formData.beneficiaries]
-    
+    const newBeneficiaries: any = [...formData.beneficiaries]
+
     if (formData.distributionMethod === 'equal') {
       const diff = value[0] - newBeneficiaries[beneficiaryIndex].percentage
       newBeneficiaries[beneficiaryIndex].percentage = value[0]
@@ -89,8 +89,8 @@ export default function CreateWill() {
       }
 
       // Update distribution for all tokens
-      newBeneficiaries.forEach(b => {
-        b.distribution = AVAILABLE_TOKENS.reduce((acc, token) => ({...acc, [token]: b.percentage}), {})
+      newBeneficiaries.forEach((b: any) => {
+        b.distribution = AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: b.percentage }), {})
       })
     } else if (token) {
       const diff = value[0] - newBeneficiaries[beneficiaryIndex].distribution[token]
@@ -105,16 +105,16 @@ export default function CreateWill() {
     }
 
     // Ensure total is 100%
-    const total = newBeneficiaries.reduce((sum, b) => sum + (formData.distributionMethod === 'equal' ? b.percentage : b.distribution[token!]), 0)
+    const total = newBeneficiaries.reduce((sum: any, b: any) => sum + (formData.distributionMethod === 'equal' ? b.percentage : b.distribution[token!]), 0)
     if (total !== 100) {
       const adjustment = (100 - total) / newBeneficiaries.length
       if (formData.distributionMethod === 'equal') {
-        newBeneficiaries.forEach(b => {
+        newBeneficiaries.forEach((b: any) => {
           b.percentage += adjustment
-          b.distribution = AVAILABLE_TOKENS.reduce((acc, token) => ({...acc, [token]: b.percentage}), {})
+          b.distribution = AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: b.percentage }), {})
         })
       } else {
-        newBeneficiaries.forEach(b => b.distribution[token!] += adjustment)
+        newBeneficiaries.forEach((b: any) => b.distribution[token!] += adjustment)
       }
     }
 
@@ -125,10 +125,10 @@ export default function CreateWill() {
     setFormData(prev => ({
       ...prev,
       beneficiaries: [
-        ...prev.beneficiaries, 
-        { 
-          address: '', 
-          distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({...acc, [token]: 0}), {}),
+        ...prev.beneficiaries,
+        {
+          address: '',
+          distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: 0 }), {}),
           percentage: 0
         }
       ]
@@ -209,7 +209,7 @@ export default function CreateWill() {
 
               <div>
                 <Label>Beneficiaries</Label>
-                {formData.beneficiaries.map((beneficiary, index) => (
+                {formData.beneficiaries.map((beneficiary: any, index) => (
                   <div key={index} className="mt-4 p-4 border rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
                       <Input
