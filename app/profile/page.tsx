@@ -34,7 +34,7 @@ export default function Profile() {
   useEffect(() => {
     if (ready && user) {
       setProfile({
-        name: user.name || '...',
+        name: '...',
         email: user.email?.address || '...',
         wallet: user.wallet?.address || '...'
       });

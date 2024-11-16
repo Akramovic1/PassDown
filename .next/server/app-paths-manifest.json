@@ -1,7 +1,10 @@
 {
+  "/_not-found": "app/_not-found.js",
   "/page": "app/page.js",
+  "/create-will/page": "app/create-will/page.js",
+  "/notifications/page": "app/notifications/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/profile/page": "app/profile/page.js",
-  "/create-will/page": "app/create-will/page.js",
+  "/verify/status/page": "app/verify/status/page.js",
   "/verify/submit/page": "app/verify/submit/page.js"
 }
