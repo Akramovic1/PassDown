@@ -14,17 +14,21 @@ import {
   Lock,
   CheckCircle2
 } from 'lucide-react'
+import { useLogin } from "@privy-io/react-auth";
+// import { PrivyClient } from "@privy-io/server-auth";
 
 export default function Home() {
   const [isConnecting, setIsConnecting] = useState(false)
   const router = useRouter()
+  const { login } = useLogin({
+    onComplete: () => router.push("/dashboard"),
+  });
 
   const connectWallet = async () => {
-    setIsConnecting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsConnecting(false)
-    router.push('/dashboard')
-  }
+    setIsConnecting(true);
+    await login();
+    setIsConnecting(false);
+  };
 
   const features = [
     {

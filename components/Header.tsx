@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Wallet2, FileText, Bell, User, FileCheck2 } from 'lucide-react'
@@ -12,20 +12,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useLogin } from "@privy-io/react-auth";
 
 const Header = () => {
   const pathname = usePathname()
+  const router = useRouter()
   const [isConnected, setIsConnected] = useState(false)
+  const { login } = useLogin({
+    onComplete: () => router.push("/dashboard"),
+  });
 
   const connectWallet = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsConnected(true)
-  }
+    setIsConnected(true);
+    await login();
+    setIsConnected(false);
+  };
 
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold">
+        <Link href="/" className="text-2xl font-bold flex items-center">
+          <img src="https://i.imgur.com/zYrrMCn.png" alt="PassDown Logo" className="h-8 w-8 mr-2" />
           PassDown
         </Link>
         <nav>
