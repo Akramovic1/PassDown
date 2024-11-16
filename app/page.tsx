@@ -139,7 +139,7 @@ export default function Home() {
             size="lg"
             className="bg-white text-blue-600 hover:bg-gray-100"
           >
-            {ready && authenticated ? (
+            {authenticated ? (
               <>
                 <Wallet className="mr-2 h-5 w-5" />
                 <>Connected</>

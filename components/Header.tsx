@@ -64,7 +64,7 @@ const Header = () => {
         </Link>
         <nav>
           <ul className="flex space-x-4">
-            {ready && authenticated ? (
+            {authenticated ? (
               <>
                 <li>
                   <Link href="/dashboard" passHref>
@@ -118,16 +118,23 @@ const Header = () => {
                 </li>
               </>
             ) : (
-              <li>
-                <Button onClick={connectWallet}>
-                  <Wallet2 className="mr-2 h-4 w-4" />
-                  Connect Wallet
-                </Button>
-              </li>
+              <></>
             )}
           </ul>
         </nav>
-        <ModeToggle />
+        <div className="flex items-center space-x-4">
+          {!authenticated ? (
+            <Button onClick={connectWallet}>
+              <Wallet2 className="mr-2 h-4 w-4" />
+              Connect Wallet
+            </Button>
+          ) : (
+            <Button onClick={logout}>
+              Logout
+            </Button>
+          )}
+          <ModeToggle />
+        </div>
       </div>
     </header>
   )
