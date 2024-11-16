@@ -25,7 +25,7 @@ interface IERC20 {
     ) external view returns (uint256);
 }
 
-contract PassDown is Ownable {
+contract CryptoWill is Ownable {
     // Structs
     struct Beneficiary {
         address beneficiaryAddress;
@@ -88,6 +88,7 @@ contract PassDown is Ownable {
     // Constructor
     constructor(address _owner) Ownable(_owner) {}
 
+    // Functions to set oracle address and required certifications (onlyOwner)
     function setOracleAddress(address _newOracle) external onlyOwner {
         require(_newOracle != address(0), "Invalid oracle address");
         oracleAddress = _newOracle;
@@ -98,19 +99,13 @@ contract PassDown is Ownable {
         requiredCertifications = _required;
     }
 
+    // Function to create a new will
     function createWill(
-        IERC20[] memory _tokenAddresses,
-        address[][] memory _beneficiariesAddresses,
-        uint256[][] memory _beneficiariesPercentages,
+        TokenDetails[] memory _tokens,
         address[] memory _trustedContacts,
         uint256 _maxInactivity // in seconds
     ) public returns (uint256) {
-        require(_tokenAddresses.length > 0, "At least one token required");
-        require(
-            _beneficiariesAddresses.length == _tokenAddresses.length &&
-                _beneficiariesPercentages.length == _tokenAddresses.length,
-            "Beneficiaries data must match tokens"
-        );
+        require(_tokens.length > 0, "At least one token required");
         require(
             _trustedContacts.length >= requiredCertifications,
             "Not enough trusted contacts"
@@ -127,25 +122,27 @@ contract PassDown is Ownable {
         newWill.lastActivity = block.timestamp;
 
         // Add tokens with their specific beneficiaries
-        for (uint i = 0; i < _tokenAddresses.length; i++) {
+        for (uint i = 0; i < _tokens.length; i++) {
             require(
-                address(_tokenAddresses[i]) != address(0),
+                address(_tokens[i].tokenAddress) != address(0),
                 "Invalid token address"
             );
             require(
-                _beneficiariesAddresses[i].length > 0 &&
-                    _beneficiariesAddresses[i].length ==
-                    _beneficiariesPercentages[i].length,
-                "Beneficiaries data mismatch for token"
+                _tokens[i].beneficiaries.length > 0,
+                "At least one beneficiary required per token"
             );
 
             TokenDetails storage tokenDetail = newWill.tokens.push();
-            tokenDetail.tokenAddress = _tokenAddresses[i];
+            tokenDetail.tokenAddress = _tokens[i].tokenAddress;
 
             uint256 totalPercentage = 0;
-            for (uint j = 0; j < _beneficiariesAddresses[i].length; j++) {
-                address beneficiaryAddr = _beneficiariesAddresses[i][j];
-                uint256 beneficiaryPerc = _beneficiariesPercentages[i][j];
+            for (uint j = 0; j < _tokens[i].beneficiaries.length; j++) {
+                address beneficiaryAddr = _tokens[i]
+                    .beneficiaries[j]
+                    .beneficiaryAddress;
+                uint256 beneficiaryPerc = _tokens[i]
+                    .beneficiaries[j]
+                    .percentage;
                 require(
                     beneficiaryAddr != address(0),
                     "Invalid beneficiary address"

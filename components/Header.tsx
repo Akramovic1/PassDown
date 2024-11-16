@@ -59,7 +59,7 @@ const Header = () => {
     <header className="border-b">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="text-2xl font-bold flex items-center">
-          <img src="https://i.imgur.com/zYrrMCn.png" alt="PassDown Logo" className="h-8 w-8 mr-2" />
+          <img src="https://i.imgur.com/lzw6I39.png" alt="PassDown Logo" className="h-8 w-8 mr-2" />
           PassDown
         </Link>
         <nav>
