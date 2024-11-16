@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
@@ -12,15 +12,42 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
 
 const Header = () => {
   const pathname = usePathname()
   const router = useRouter()
   const [isConnected, setIsConnected] = useState(false)
   const { login } = useLogin({
-    onComplete: () => router.push("/dashboard"),
+    // onComplete: () => router.push("/dashboard"),
   });
+
+  const {
+    ready,
+    authenticated,
+    user,
+    logout,
+    linkEmail,
+    linkWallet,
+    unlinkEmail,
+    linkPhone,
+    unlinkPhone,
+    unlinkWallet,
+    linkGoogle,
+    unlinkGoogle,
+    linkTwitter,
+    unlinkTwitter,
+    linkDiscord,
+    unlinkDiscord,
+  } = usePrivy();
+
+  useEffect(() => {
+    console.log("Ready: ", ready);
+    console.log("User: ", user);
+    if (ready && !authenticated) {
+      router.push("/");
+    }
+  }, [ready, authenticated, router]);
 
   const connectWallet = async () => {
     setIsConnected(true);
@@ -37,7 +64,7 @@ const Header = () => {
         </Link>
         <nav>
           <ul className="flex space-x-4">
-            {isConnected ? (
+            {ready ? (
               <>
                 <li>
                   <Link href="/dashboard" passHref>

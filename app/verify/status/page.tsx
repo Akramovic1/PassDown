@@ -27,12 +27,12 @@ export default function CheckStatus() {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      // await new Promise(resolve => setTimeout(resolve, 1500))
+
       // Simulate random status for demo
       const statuses: WillStatus['status'][] = ['pending', 'approved', 'rejected']
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)]
-      
+
       setStatus({
         id: willId,
         status: randomStatus,
@@ -94,8 +94,8 @@ export default function CheckStatus() {
                 />
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full"
                 disabled={isLoading}
               >

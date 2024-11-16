@@ -1,19 +1,25 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { User, Mail, Wallet } from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
 
 export default function Profile() {
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john@example.com',
-    wallet: '0x1234...5678'
+    name: '...',
+    email: '...',
+    wallet: '...'
   })
+
+  const {
+    ready,
+    user
+  } = usePrivy();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.id]: e.target.value })
@@ -24,6 +30,17 @@ export default function Profile() {
     console.log('Profile updated:', profile)
     // Here you would typically send the updated profile to your backend
   }
+
+  useEffect(() => {
+    if (ready && user) {
+      setProfile({
+        name: user.name || '...',
+        email: user.email?.address || '...',
+        wallet: user.wallet?.address || '...'
+      });
+    }
+  }, [ready, user]);
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -39,16 +56,16 @@ export default function Profile() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="name" className="flex items-center">
+                {/* <Label htmlFor="name" className="flex items-center">
                   <User className="mr-2 h-4 w-4" />
                   Name
-                </Label>
-                <Input
+                </Label> */}
+                {/* <Input
                   type="text"
                   id="name"
                   value={profile.name}
                   onChange={handleChange}
-                />
+                /> */}
               </div>
               <div>
                 <Label htmlFor="email" className="flex items-center">
@@ -74,7 +91,7 @@ export default function Profile() {
                   readOnly
                 />
               </div>
-              <Button type="submit" className="w-full">Update Profile</Button>
+              {/* <Button type="submit" className="w-full">Update Profile</Button> */}
             </form>
           </CardContent>
         </Card>

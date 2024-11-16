@@ -14,15 +14,19 @@ import {
   Lock,
   CheckCircle2
 } from 'lucide-react'
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
 // import { PrivyClient } from "@privy-io/server-auth";
 
 export default function Home() {
   const [isConnecting, setIsConnecting] = useState(false)
   const router = useRouter()
   const { login } = useLogin({
-    onComplete: () => router.push("/dashboard"),
+    // onComplete: () => router.push("/dashboard"),
   });
+
+  const {
+    ready,
+  } = usePrivy();
 
   const connectWallet = async () => {
     setIsConnecting(true);
@@ -134,8 +138,11 @@ export default function Home() {
             size="lg"
             className="bg-white text-blue-600 hover:bg-gray-100"
           >
-            {isConnecting ? (
-              <>Connecting...</>
+            {ready ? (
+              <>
+                <Wallet className="mr-2 h-5 w-5" />
+                <>Connected</>
+              </>
             ) : (
               <>
                 <Wallet className="mr-2 h-5 w-5" />
