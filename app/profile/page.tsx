@@ -18,6 +18,7 @@ export default function Profile() {
 
   const {
     ready,
+    authenticated,
     user
   } = usePrivy();
 
@@ -32,14 +33,14 @@ export default function Profile() {
   }
 
   useEffect(() => {
-    if (ready && user) {
+    if (ready && authenticated && user) {
       setProfile({
         name: '...',
         email: user.email?.address || '...',
         wallet: user.wallet?.address || '...'
       });
     }
-  }, [ready, user]);
+  }, [ready, authenticated, user]);
 
 
   return (

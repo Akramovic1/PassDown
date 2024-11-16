@@ -64,7 +64,7 @@ const Header = () => {
         </Link>
         <nav>
           <ul className="flex space-x-4">
-            {ready ? (
+            {ready && authenticated ? (
               <>
                 <li>
                   <Link href="/dashboard" passHref>

@@ -26,6 +26,7 @@ export default function Home() {
 
   const {
     ready,
+    authenticated
   } = usePrivy();
 
   const connectWallet = async () => {
@@ -138,7 +139,7 @@ export default function Home() {
             size="lg"
             className="bg-white text-blue-600 hover:bg-gray-100"
           >
-            {ready ? (
+            {ready && authenticated ? (
               <>
                 <Wallet className="mr-2 h-5 w-5" />
                 <>Connected</>
