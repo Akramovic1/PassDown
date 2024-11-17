@@ -89,34 +89,6 @@ export default function Home() {
     }
   ]
 
-  const partners = [
-    { name: 'Blockscout', logo: 'https://cryptologos.cc/logos/blockscout-explorer-logo.png' },
-    { name: 'Filecoin', logo: 'https://cryptologos.cc/logos/filecoin-fil-logo.png' },
-    { name: 'Chainlink', logo: 'https://cryptologos.cc/logos/chainlink-link-logo.png' },
-    { name: 'Sign Protocol', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'XMTP', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'Push Protocol', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'ENS', logo: 'https://cryptologos.cc/logos/ethereum-name-service-ens-logo.png' },
-    { name: 'The Graph', logo: 'https://cryptologos.cc/logos/the-graph-grt-logo.png' },
-    { name: 'Web3 Auth', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'Biconomy', logo: 'https://cryptologos.cc/logos/biconomy-bico-logo.png' },
-    { name: 'Curvegrid', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' }
-  ]
-
-  const blockchains = [
-    { name: 'Base', logo: 'https://cryptologos.cc/logos/base-logo.png' },
-    { name: 'Arbitrum', logo: 'https://cryptologos.cc/logos/arbitrum-arb-logo.png' },
-    { name: 'Polygon', logo: 'https://cryptologos.cc/logos/polygon-matic-logo.png' },
-    { name: 'Biktub', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'Gnosis Chain', logo: 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png' },
-    { name: 'Flare', logo: 'https://cryptologos.cc/logos/flare-flr-flr-logo.png' },
-    { name: 'Celo', logo: 'https://cryptologos.cc/logos/celo-celo-logo.png' },
-    { name: 'NEON EVM', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'Mantle', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' },
-    { name: 'Flow', logo: 'https://cryptologos.cc/logos/flow-flow-logo.png' },
-    { name: 'Morph', logo: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=64&h=64' }
-  ]
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -217,7 +189,7 @@ export default function Home() {
       </section>
 
       {/* Partners Section */}
-      <section className="py-20 overflow-hidden">
+      {/* <section className="py-20 overflow-hidden">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">Our Partners</h2>
           <div className="relative">
@@ -238,10 +210,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Supported Blockchains Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+      {/* <section className="py-20 bg-gray-50 dark:bg-gray-900 overflow-hidden">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">Supported Blockchains</h2>
           <div className="relative">
@@ -262,7 +234,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
