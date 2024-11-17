@@ -1,16 +1,30 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Wallet, FileText, AlertTriangle, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import { usePrivy } from "@privy-io/react-auth";
+import { getUserWills } from '../getter'
+
+type Will = {
+  id?: number
+  isActive: boolean;
+  isCanceled: boolean;
+  maxInactivity: number;
+  trustedWallet: string[];
+  tokens: {
+    tokenAddress: string;
+    beneficiaries: string[];
+  }[];
+};
 
 export default function Dashboard() {
-  const [activeWills, setActiveWills] = useState([
-    { id: 1, chain: 'Ethereum', amount: '5 ETH', beneficiary: '0x1234...5678' },
-    { id: 2, chain: 'Binance Smart Chain', amount: '100 BNB', beneficiary: '0xabcd...efgh' },
+  const { signMessage, sendTransaction, user, ready } = usePrivy();
+  const [activeWills, setActiveWills] = useState<Will[]>([
+
   ])
 
   const [assets, setAssets] = useState([
@@ -18,6 +32,33 @@ export default function Dashboard() {
     { chain: 'Binance Smart Chain', balance: '500 BNB' },
     { chain: 'Polygon', balance: '1000 MATIC' },
   ])
+
+  const getWills = async () => {
+    debugger;
+    const address = user?.wallet?.address;
+    if (address) {
+      const wills = await getUserWills(address) as any;
+      const res = wills.map((wills: any) => {
+        // will[1].id = will[0];
+        // return will[1];
+        let will;
+        for (let i = 0; i < wills.length; i++) {
+          will = wills[i][1];
+          // will.id = wills[i][0].toString();
+        }
+        console.log(will);
+        return will;
+      });
+      console.log(res);
+      setActiveWills(res as Will[]);
+    } else {
+      console.error("User wallet address is undefined");
+    }
+  }
+
+  useEffect(() => {
+    getWills();
+  }, [ready])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -41,13 +82,21 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {activeWills.map((will) => (
-                <div key={will.id} className="mb-4 p-4 border rounded-lg">
+              {activeWills.map((will, index) => (
+                <div key={index} className="mb-4 p-4 border rounded-lg">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold">{will.chain}</span>
-                    <span className="text-sm text-gray-500">{will.amount}</span>
+                    <span className="font-semibold">Is Active: {will.isActive ? 'Yes' : 'No'}</span>
+                    <span className="text-sm text-gray-500">Is Canceled: {will.isCanceled ? 'Yes' : 'No'}</span>
                   </div>
-                  <div className="text-sm">Beneficiary: {will.beneficiary}</div>
+                  <div className="text-sm mb-2">Max Inactivity: {will.maxInactivity}</div>
+                  <div className="text-sm mb-2">Trusted Wallets: {will.trustedWallet}</div>
+                  <div className="text-sm">Tokens:</div>
+                  {will.tokens.map((token, tokenIndex) => (
+                    <div key={tokenIndex} className="ml-4">
+                      <div>Token Address: {token.tokenAddress}</div>
+                      <div>Beneficiaries: {token.beneficiaries.join(', ')}</div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </CardContent>

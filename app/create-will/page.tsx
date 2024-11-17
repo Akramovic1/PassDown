@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,44 +8,32 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { FileText, Plus, Trash2 } from 'lucide-react'
+import { CHAIN_IDS, ERC20_ABI, PASSDOWN_ABI, PASSDOWN_ADDRESS } from '../constants'
+import { encodeFunctionData } from 'viem'
+import { usePrivy } from '@privy-io/react-auth'
 
-const AVAILABLE_TOKENS = ['ETH', 'SHIBA', 'PEPE']
+const AVAILABLE_TOKENS = ['USDC']
+const TOKEN_ADDRESS = {
+  USDC: '0x52Bf57b19c37Bd2A92b54018aE18AA4D651a6a43',
+}
+
+type Distribution = {
+  [key: string]: number;
+};
 
 export default function CreateWill() {
+  const { sendTransaction, user } = usePrivy();
   const [formData, setFormData] = useState({
-    chain: '',
-    distributionMethod: 'equal',
+    chain: 'baseSepolia' as keyof typeof CHAIN_IDS,
     beneficiaries: [{
       address: '',
-      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: 100 / AVAILABLE_TOKENS.length }), {}),
-      percentage: 100
+      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: 100 / AVAILABLE_TOKENS.length }), {}) as Distribution,
     }],
-    verificationMethod: 'inactivity',
     inactivityPeriod: 365, // days
     trustedWallets: [''],
-    oracleAddress: '',
   })
-
-  useEffect(() => {
-    adjustPercentages()
-  }, [formData.beneficiaries.length, formData.distributionMethod])
-
-  const adjustPercentages = () => {
-    const equalPercentage = 100 / formData.beneficiaries.length
-    const newBeneficiaries = formData.beneficiaries.map(b => ({
-      ...b,
-      distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: equalPercentage }), {}),
-      percentage: equalPercentage
-    }))
-
-    setFormData(prev => ({
-      ...prev,
-      beneficiaries: newBeneficiaries,
-    }))
-  }
+  const [isApproved, setIsApproved] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
     if (index !== undefined && e.target.name === 'beneficiaries.address') {
@@ -62,60 +50,26 @@ export default function CreateWill() {
   }
 
   const handleSelectChange = (value: string) => {
-    setFormData({ ...formData, chain: value })
+    setFormData({ ...formData, chain: value as keyof typeof CHAIN_IDS })
   }
 
-  const handleVerificationMethodChange = (value: string) => {
-    setFormData({ ...formData, verificationMethod: value })
-  }
-
-  const handleDistributionMethodChange = (value: string) => {
-    setFormData({ ...formData, distributionMethod: value })
-    adjustPercentages()
-  }
-
-  const handleSliderChange = (value: number[], beneficiaryIndex: number, token?: string) => {
+  const handleSliderChange = (value: number[], beneficiaryIndex: number, token: string) => {
     const newBeneficiaries: any = [...formData.beneficiaries]
+    const diff = value[0] - newBeneficiaries[beneficiaryIndex].distribution[token]
+    newBeneficiaries[beneficiaryIndex].distribution[token] = value[0]
 
-    if (formData.distributionMethod === 'equal') {
-      const diff = value[0] - newBeneficiaries[beneficiaryIndex].percentage
-      newBeneficiaries[beneficiaryIndex].percentage = value[0]
-
-      // Adjust other beneficiaries' percentages
-      for (let i = 0; i < newBeneficiaries.length; i++) {
-        if (i !== beneficiaryIndex) {
-          newBeneficiaries[i].percentage = Math.max(0, newBeneficiaries[i].percentage - diff / (newBeneficiaries.length - 1))
-        }
-      }
-
-      // Update distribution for all tokens
-      newBeneficiaries.forEach((b: any) => {
-        b.distribution = AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: b.percentage }), {})
-      })
-    } else if (token) {
-      const diff = value[0] - newBeneficiaries[beneficiaryIndex].distribution[token]
-      newBeneficiaries[beneficiaryIndex].distribution[token] = value[0]
-
-      // Adjust other beneficiaries' percentages for this token
-      for (let i = 0; i < newBeneficiaries.length; i++) {
-        if (i !== beneficiaryIndex) {
-          newBeneficiaries[i].distribution[token] = Math.max(0, newBeneficiaries[i].distribution[token] - diff / (newBeneficiaries.length - 1))
-        }
+    // Adjust other beneficiaries' percentages for this token
+    for (let i = 0; i < newBeneficiaries.length; i++) {
+      if (i !== beneficiaryIndex) {
+        newBeneficiaries[i].distribution[token] = Math.max(0, newBeneficiaries[i].distribution[token] - diff / (newBeneficiaries.length - 1))
       }
     }
 
     // Ensure total is 100%
-    const total = newBeneficiaries.reduce((sum: any, b: any) => sum + (formData.distributionMethod === 'equal' ? b.percentage : b.distribution[token!]), 0)
+    const total = newBeneficiaries.reduce((sum: any, b: any) => sum + b.distribution[token], 0)
     if (total !== 100) {
       const adjustment = (100 - total) / newBeneficiaries.length
-      if (formData.distributionMethod === 'equal') {
-        newBeneficiaries.forEach((b: any) => {
-          b.percentage += adjustment
-          b.distribution = AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: b.percentage }), {})
-        })
-      } else {
-        newBeneficiaries.forEach((b: any) => b.distribution[token!] += adjustment)
-      }
+      newBeneficiaries.forEach((b: any) => b.distribution[token] += adjustment)
     }
 
     setFormData({ ...formData, beneficiaries: newBeneficiaries })
@@ -129,7 +83,6 @@ export default function CreateWill() {
         {
           address: '',
           distribution: AVAILABLE_TOKENS.reduce((acc, token) => ({ ...acc, [token]: 0 }), {}),
-          percentage: 0
         }
       ]
     }))
@@ -157,9 +110,81 @@ export default function CreateWill() {
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
+    e.preventDefault();
+    const chainId = CHAIN_IDS[formData.chain];
+    console.log('Chain ID:', chainId);
+
+    const inactivityTime = formData.inactivityPeriod * 24 * 60 * 60;
+    console.log('Inactivity Time (seconds):', inactivityTime);
+
+    const trustedWallets = formData.trustedWallets;
+    console.log('Trusted Wallets:', trustedWallets);
+
+    const tokenDetails = AVAILABLE_TOKENS.map(token => ({
+      tokenAddress: TOKEN_ADDRESS[token as keyof typeof TOKEN_ADDRESS],
+      beneficiaries: formData.beneficiaries.map(beneficiary => ({
+        beneficiaryAddress: beneficiary.address,
+        percentage: Number(beneficiary!.distribution[token]) * 100
+      }))
+    }));
+    console.log('Token Details:', tokenDetails);
+
+    const calldata = encodeFunctionData({
+      abi: PASSDOWN_ABI,
+      functionName: "createWill",
+      args: [tokenDetails, trustedWallets, inactivityTime],
+    })
+
+    const willTx = sendTransaction(
+      {
+        to: PASSDOWN_ADDRESS[formData.chain],
+        value: "0x0",
+        data: calldata,
+        chainId: chainId,
+        gasLimit: BigInt("1000000"),
+        gasPrice: BigInt("100000000000"),
+      },
+      {
+        showWalletUIs: true,
+        title: "Create Will",
+      }
+    );
     // Here you would typically send the data to your backend
+  }
+
+  const approveToken = () => {
+    const chainId = CHAIN_IDS[formData.chain];
+    const tokenDetails = AVAILABLE_TOKENS.map(token => ({
+      tokenAddress: TOKEN_ADDRESS[token as keyof typeof TOKEN_ADDRESS],
+      beneficiaries: formData.beneficiaries.map(beneficiary => ({
+        beneficiaryAddress: beneficiary.address,
+        percentage: Number(beneficiary!.distribution[token]) * 100
+      }))
+    }));
+    for (let token of tokenDetails) {
+      // make approve for contract
+      const approveCalldata = encodeFunctionData({
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [PASSDOWN_ADDRESS[formData.chain], "100000000000000"]
+      });
+
+      const approveTx = sendTransaction(
+        {
+          to: token.tokenAddress,
+          value: "0x0",
+          data: approveCalldata,
+          chainId: chainId,
+          gasLimit: BigInt("1000000"),
+          gasPrice: BigInt("100000000000"),
+        },
+        {
+          showWalletUIs: true,
+          title: "Approve Token",
+        }
+      );
+    }
+    setIsApproved(true);
   }
 
   return (
@@ -174,7 +199,7 @@ export default function CreateWill() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form className="space-y-6">
               <div>
                 <Label htmlFor="chain">Select Blockchain</Label>
                 <Select onValueChange={handleSelectChange}>
@@ -182,29 +207,9 @@ export default function CreateWill() {
                     <SelectValue placeholder="Select a blockchain" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ethereum">Ethereum</SelectItem>
-                    <SelectItem value="bsc">Binance Smart Chain</SelectItem>
-                    <SelectItem value="polygon">Polygon</SelectItem>
+                    <SelectItem value="baseSepolia">Base</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label>Distribution Method</Label>
-                <RadioGroup
-                  defaultValue="equal"
-                  onValueChange={handleDistributionMethodChange}
-                  className="flex flex-col space-y-1 mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="equal" id="equal" />
-                    <Label htmlFor="equal">Equal distribution for all assets</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="custom" id="custom" />
-                    <Label htmlFor="custom">Specify percentages for each token</Label>
-                  </div>
-                </RadioGroup>
               </div>
 
               <div>
@@ -225,35 +230,21 @@ export default function CreateWill() {
                         </Button>
                       )}
                     </div>
-                    {formData.distributionMethod === 'equal' ? (
-                      <div className="flex items-center space-x-2">
-                        <Label className="w-16">All Assets</Label>
-                        <Slider
-                          className="flex-grow"
-                          value={[beneficiary.percentage]}
-                          onValueChange={(value) => handleSliderChange(value, index)}
-                          max={100}
-                          step={1}
-                        />
-                        <span className="w-16 text-right">{beneficiary.percentage.toFixed(2)}%</span>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {AVAILABLE_TOKENS.map(token => (
-                          <div key={token} className="flex items-center space-x-2">
-                            <Label className="w-16">{token}</Label>
-                            <Slider
-                              className="flex-grow"
-                              value={[beneficiary.distribution[token]]}
-                              onValueChange={(value) => handleSliderChange(value, index, token)}
-                              max={100}
-                              step={1}
-                            />
-                            <span className="w-16 text-right">{beneficiary.distribution[token].toFixed(2)}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      {AVAILABLE_TOKENS.map(token => (
+                        <div key={token} className="flex items-center space-x-2">
+                          <Label className="w-16">{token}</Label>
+                          <Slider
+                            className="flex-grow"
+                            value={[beneficiary.distribution[token]]}
+                            onValueChange={(value) => handleSliderChange(value, index, token)}
+                            max={100}
+                            step={1}
+                          />
+                          <span className="w-16 text-right">{beneficiary.distribution[token].toFixed(2)}%</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
                 <Button type="button" onClick={addBeneficiary} className="mt-2">
@@ -263,68 +254,52 @@ export default function CreateWill() {
               </div>
 
               <div>
-                <Label>Death Verification Method</Label>
-                <Tabs onValueChange={handleVerificationMethodChange} value={formData.verificationMethod}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="inactivity">Wallet Inactivity</TabsTrigger>
-                    <TabsTrigger value="trusted">Trusted Wallets</TabsTrigger>
-                    <TabsTrigger value="oracle">Oracle</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="inactivity">
-                    <div className="mt-2">
-                      <Label htmlFor="inactivityPeriod">Inactivity Period (days)</Label>
-                      <Input
-                        type="number"
-                        id="inactivityPeriod"
-                        name="inactivityPeriod"
-                        value={formData.inactivityPeriod}
-                        onChange={handleChange}
-                        min={1}
-                      />
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="trusted">
-                    <div className="mt-2">
-                      <Label>Trusted Wallets</Label>
-                      {formData.trustedWallets.map((wallet, index) => (
-                        <div key={index} className="flex items-center space-x-2 mt-2">
-                          <Input
-                            type="text"
-                            name="trustedWallets"
-                            placeholder="Trusted Wallet Address"
-                            value={wallet}
-                            onChange={(e) => handleChange(e, index)}
-                          />
-                          {index > 0 && (
-                            <Button type="button" variant="destructive" size="icon" onClick={() => removeTrustedWallet(index)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      <Button type="button" onClick={addTrustedWallet} className="mt-2">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Trusted Wallet
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="oracle">
-                    <div className="mt-2">
-                      <Label htmlFor="oracleAddress">Oracle Contract Address</Label>
+                <Label>Death Verification</Label>
+                <div className="mt-2">
+                  <Label htmlFor="inactivityPeriod">Inactivity Period (days)</Label>
+                  <Input
+                    type="number"
+                    id="inactivityPeriod"
+                    name="inactivityPeriod"
+                    value={formData.inactivityPeriod}
+                    onChange={handleChange}
+                    min={1}
+                  />
+                </div>
+                <div className="mt-2">
+                  <Label>Trusted Wallets</Label>
+                  {formData.trustedWallets.map((wallet, index) => (
+                    <div key={index} className="flex items-center space-x-2 mt-2">
                       <Input
                         type="text"
-                        id="oracleAddress"
-                        name="oracleAddress"
-                        value={formData.oracleAddress}
-                        onChange={handleChange}
-                        placeholder="0x..."
+                        name="trustedWallets"
+                        placeholder="Trusted Wallet Address"
+                        value={wallet}
+                        onChange={(e) => handleChange(e, index)}
                       />
+                      {index > 0 && (
+                        <Button type="button" variant="destructive" size="icon" onClick={() => removeTrustedWallet(index)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                  </TabsContent>
-                </Tabs>
+                  ))}
+                  <Button type="button" onClick={addTrustedWallet} className="mt-2">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Trusted Wallet
+                  </Button>
+                </div>
+                <div className="mt-2">
+                  <p>We will also use oracles to verify death with government records.</p>
+                </div>
               </div>
 
-              <Button type="submit" className="w-full">Create Will</Button>
+              {!isApproved && (
+                <Button type="button" onClick={approveToken} className="w-full">Approve</Button>
+              )}
+              {isApproved && (
+                <Button type="button" onClick={handleSubmit} className="w-full">Create Will</Button>
+              )}
             </form>
           </CardContent>
         </Card>

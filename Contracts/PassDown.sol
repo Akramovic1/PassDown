@@ -324,14 +324,21 @@ contract CryptoWill is Ownable {
 
     // Getter Function: Get all wills associated with a user
     /**
-     * @dev Returns all will IDs associated with the given user address.
+     * @dev Returns an array of will IDs and their details for a specific user.
      * @param user The address of the user.
-     * @return An array of will IDs.
+     * @return An array of will IDs and their details.
      */
     function getUserWills(
         address user
-    ) external view returns (uint256[] memory) {
-        return userWills[user];
+    ) external view returns (uint256[] memory, Will[] memory) {
+        uint256[] memory willIds = userWills[user];
+        Will[] memory willDetails = new Will[](willIds.length);
+
+        for (uint i = 0; i < willIds.length; i++) {
+            willDetails[i] = wills[willIds[i]];
+        }
+
+        return (willIds, willDetails);
     }
 
     // Getter Function: Get detailed information about a specific will
