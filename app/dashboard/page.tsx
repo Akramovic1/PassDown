@@ -23,30 +23,43 @@ type Will = {
 
 export default function Dashboard() {
   const { signMessage, sendTransaction, user, ready } = usePrivy();
-  const [activeWills, setActiveWills] = useState<Will[]>([
+  const [activeWills, setActiveWills] = useState<Will[]>([]);
+  const [assets, setAssets] = useState<{ tokenAddress: string; balance: string }[]>([]);
 
-  ])
+  async function getERC20Balance(): Promise<any> {
+    if (!user!.wallet?.address) {
+      return;
+    }
 
-  const [assets, setAssets] = useState([
-    { chain: 'Ethereum', balance: '10 ETH' },
-    { chain: 'Binance Smart Chain', balance: '500 BNB' },
-    { chain: 'Polygon', balance: '1000 MATIC' },
-  ])
+    const walletAddress = user!.wallet?.address;
+    const apiUrl = `https://base-sepolia.blockscout.com/api/v2/addresses/${walletAddress}/tokens?type=ERC-20`;
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error(`Error fetching data: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const erc20Balances = data.items.map((item: any) => ({
+        tokenAddress: item.token.address,
+        balance: (item.value / 1000000).toString()
+      }));
+      setAssets(erc20Balances);
+    } catch (error) {
+      console.error("Error fetching ERC-20 balance:", error);
+      throw error;
+    }
+  }
 
   const getWills = async () => {
-    debugger;
     const address = user?.wallet?.address;
     if (address) {
       const wills = await getUserWills(address) as any;
       const res = wills.map((wills: any) => {
-        // will[1].id = will[0];
-        // return will[1];
         let will;
         for (let i = 0; i < wills.length; i++) {
           will = wills[i][1];
-          // will.id = wills[i][0].toString();
         }
-        console.log(will);
         return will;
       });
       console.log(res);
@@ -58,6 +71,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getWills();
+    getERC20Balance();
   }, [ready])
 
   return (
@@ -112,7 +126,14 @@ export default function Dashboard() {
               {assets.map((asset, index) => (
                 <div key={index} className="mb-4 p-4 border rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold">{asset.chain}</span>
+                    <h3 className="text-sm text-gray-500">Blockchain: Base</h3>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Token Address: {asset.tokenAddress}</span>
+
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Balance:</span>
                     <span>{asset.balance}</span>
                   </div>
                 </div>

@@ -208,6 +208,10 @@ export default function CreateWill() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="baseSepolia">Base</SelectItem>
+                    <SelectItem value="sepolia">Ethereum</SelectItem>
+                    <SelectItem value="amoy">Polygon</SelectItem>
+                    <SelectItem value="morph">Morph</SelectItem>
+                    <SelectItem value="arbitrum">Arbitrum</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

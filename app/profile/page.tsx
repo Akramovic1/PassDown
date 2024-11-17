@@ -85,12 +85,20 @@ export default function Profile() {
                   <Wallet className="mr-2 h-4 w-4" />
                   Connected Wallet
                 </Label>
-                <Input
-                  type="text"
-                  id="wallet"
-                  value={profile.wallet}
-                  readOnly
-                />
+                <a
+                  href={`https://base-sepolia.blockscout.com/address/${profile.wallet}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <Input
+                    type="text"
+                    id="wallet"
+                    value={profile.wallet}
+                    readOnly
+                    className="cursor-pointer"
+                  />
+                </a>
               </div>
               {/* <Button type="submit" className="w-full">Update Profile</Button> */}
             </form>
